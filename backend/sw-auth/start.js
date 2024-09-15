@@ -40,7 +40,7 @@ const data = database.collection(COLLECTION);
 //     //     if (!crypto.timingSafeEqual(userPassArrayBuffer, hashedPasswordArrayBuffer)) {
 //     //         return console.log('Incorrect username or password.');
 //     //     }
-//     //     // const token = jwt.sign({ userId: user._id }, '123123123123123lfjsdjfhsdkfjhasdfkj123123123123', {
+//     //     // const token = jwt.sign({ userId: user._id }, '', {
 //     //     //     expiresIn: '1h',
 //     //     // });
 //     //     return console.log('user - OK!')
