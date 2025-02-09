@@ -1,11 +1,13 @@
-import {Injectable, HttpException, HttpStatus} from "@nestjs/common"
+import {Injectable, HttpException, HttpStatus, NotImplementedException} from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
 import { CreateUserDto } from "./dto/create-user.dto"
 import { UserEntity } from "./user.entity"
 import {sign} from "jsonwebtoken";
 import {JWT_SECRET} from "@app/config";
+import {compare} from "bcrypt";
 import {UserResponseInterface} from "@app/user/types/userResponse.interface";
+import {GetUserDto} from "@app/user/dto/get-user.dto";
 
 @Injectable()
 export class UserService {
@@ -46,5 +48,41 @@ export class UserService {
         Object.assign(newUser, createUserDto)
         const user = await this.userRepository.save(newUser);
         return this.buildUserResponse(user)
+    }
+
+    // async checkPassword(getUserDto, userByEmail): Promise<any> {
+    //     const check = await compare(getUserDto.password, userByEmail.password)
+    //
+    //     if(!check){
+    //         // throw new HttpException('PasswordError', HttpStatus.UNPROCESSABLE_ENTITY)
+    //         throw new Error()
+    //     }
+    //
+    //     return true;
+    // }
+
+    async login(getUserDto: GetUserDto): Promise<any> {
+        const userByEmail = await this.userRepository.findOne({where:{email: getUserDto.email}})
+
+        console.log('userByEmail ttt:', userByEmail.password)
+        console.log('getUserDto ttt:', getUserDto.password)
+
+        if(!userByEmail){
+            throw new HttpException("User not found", HttpStatus.NOT_FOUND)
+        }
+
+        const isPasswordCorrect = await compare(getUserDto.password, userByEmail.password)
+
+        if(!isPasswordCorrect){
+            throw new HttpException("Pass err", HttpStatus.FORBIDDEN)
+        }
+
+        // try {
+        //     await this.checkPassword(getUserDto, userByEmail)
+        // } catch (err) {
+        //     throw new HttpException('Password Error', HttpStatus.FORBIDDEN)
+        // }
+
+        return userByEmail
     }
 }
