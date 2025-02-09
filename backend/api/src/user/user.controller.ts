@@ -17,7 +17,6 @@ export class UserController {
     @UsePipes(new ValidationPipe())
     async createUser(
         @Body('user') createUserDto: CreateUserDto): Promise<UserResponseInterface> {
-        console.log('ttt user', createUserDto)
         return this.userService.createUser(createUserDto);
     }
 }
