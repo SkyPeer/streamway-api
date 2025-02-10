@@ -67,8 +67,6 @@ export class UserService {
                 where:{email: getUserDto.email},
                 select: ['id','username', 'bio', 'email', 'image', 'password']
             })
-        console.log('userByEmail ttt:', userByEmail.password)
-        console.log('getUserDto ttt:', getUserDto.password)
 
         if(!userByEmail){
             throw new HttpException("User not found", HttpStatus.NOT_FOUND)
