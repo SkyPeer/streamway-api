@@ -62,8 +62,11 @@ export class UserService {
     // }
 
     async login(getUserDto: GetUserDto): Promise<any> {
-        const userByEmail = await this.userRepository.findOne({where:{email: getUserDto.email}})
-
+        const userByEmail = await this.userRepository.findOne(
+            {
+                where:{email: getUserDto.email},
+                select: ['id','username', 'bio', 'email', 'image', 'password']
+            })
         console.log('userByEmail ttt:', userByEmail.password)
         console.log('getUserDto ttt:', getUserDto.password)
 
@@ -74,7 +77,7 @@ export class UserService {
         const isPasswordCorrect = await compare(getUserDto.password, userByEmail.password)
 
         if(!isPasswordCorrect){
-            throw new HttpException("Pass err", HttpStatus.FORBIDDEN)
+            throw new HttpException("Password error", HttpStatus.FORBIDDEN)
         }
 
         // try {
@@ -83,6 +86,8 @@ export class UserService {
         //     throw new HttpException('Password Error', HttpStatus.FORBIDDEN)
         // }
 
-        return userByEmail
+        delete userByEmail.password;
+
+        return this.buildUserResponse(userByEmail)
     }
 }
