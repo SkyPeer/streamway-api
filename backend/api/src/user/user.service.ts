@@ -16,6 +16,10 @@ export class UserService {
         private readonly userRepository: Repository<UserEntity>,
     ) {}
 
+    findById(id: number): Promise<UserEntity> {
+        return this.userRepository.findOne({where: {id}})
+    }
+
     generateJwt(user: UserEntity): any {
         return sign({
             id: user.id,
