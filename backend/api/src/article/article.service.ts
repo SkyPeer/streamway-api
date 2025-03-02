@@ -4,6 +4,7 @@ import {CreateArticleDto} from "@app/article/dto/createArticle.dto";
 import {ArticleEntity} from "@app/article/article.entity";
 import {InjectRepository} from "@nestjs/typeorm";
 import {Repository} from "typeorm";
+import slugify from "slugify";
 
 @Injectable()
 export class ArticleService {
@@ -14,7 +15,7 @@ export class ArticleService {
     async createArticle(
         currentUser: UserEntity,
         createArticleDto: CreateArticleDto):
-        Promise<any> {
+        Promise<ArticleEntity> {
         const article = new ArticleEntity();
         Object.assign(article, createArticleDto);
 
@@ -22,10 +23,21 @@ export class ArticleService {
             article.tagList = [];
         }
 
-        article.slug = 'foo';
+        article.slug = this.getSlug(article.title);
 
         article.author = currentUser;
 
         return await this.articleRepository.save(article);
+    }
+
+    buildArticleResponse(article: ArticleEntity) {
+        return {article}
+    }
+
+    private getSlug(title: string): string {
+        return (
+            slugify(title, {lower: true}) + '-' +
+            (Math.random() * Math.pow(36, 6)).toString(36)
+        );
     }
 }

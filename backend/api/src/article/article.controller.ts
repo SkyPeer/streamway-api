@@ -5,14 +5,19 @@ import {User} from "@app/user/decorators/user.decorator";
 import {UserEntity} from "@app/user/user.entity";
 import {ArticleEntity} from "@app/article/article.entity";
 import {CreateArticleDto} from "@app/article/dto/createArticle.dto";
+import {ArticleResponseInterface} from "@app/article/types/articleResponse.interface";
 
 @Controller('articles')
 export class ArticleController {
     constructor(private readonly articleService: ArticleService) {}
     @Post()
     @UseGuards(AuthGuard)
-    async create(@User() currentUser: UserEntity, @Body('article') createArticleDto: CreateArticleDto) {
-        return this.articleService.createArticle(currentUser, createArticleDto);
+    async create(
+        @User() currentUser: UserEntity,
+        @Body('article') createArticleDto: CreateArticleDto
+    ): Promise<ArticleResponseInterface> {
+        const article: ArticleEntity = await this.articleService.createArticle(currentUser, createArticleDto);
+        return this.articleService.buildArticleResponse(article);
     }
 }
 

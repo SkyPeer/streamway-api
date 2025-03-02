@@ -8,6 +8,8 @@ import {AuthMiddleware} from "@app/middlewares/auth.middleware";
 import {ArticleModule} from "@app/article/article.module";
 import ormconfig from '@app/ormconfig';
 
+// Examples api's requests
+// https://realworld-docs.netlify.app/
 
 @Module({
   imports: [
