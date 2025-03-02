@@ -8,6 +8,7 @@ import {JWT_SECRET} from "@app/config";
 import {compare} from "bcrypt";
 import {UserResponseInterface} from "@app/user/types/userResponse.interface";
 import {GetUserDto} from "@app/user/dto/get-user.dto";
+import {UpdateUserDto} from "@app/user/dto/updateUser.dto";
 
 @Injectable()
 export class UserService {
@@ -68,7 +69,8 @@ export class UserService {
     async login(getUserDto: GetUserDto): Promise<any> {
         const userByEmail = await this.userRepository.findOne(
             {
-                where:{email: getUserDto.email},
+                where: {email: getUserDto.email},
+                // CustomSqlSelect
                 select: ['id','username', 'bio', 'email', 'image', 'password']
             })
 
@@ -91,5 +93,13 @@ export class UserService {
         delete userByEmail.password;
 
         return this.buildUserResponse(userByEmail)
+    }
+
+    async updateUser(userId: number, updateUserDto: UpdateUserDto): Promise<UserEntity> {
+        const user = await this.userRepository.findOne({where:{id:userId}})
+        // this.userRepository.update()
+        const data = {...user, ...updateUserDto};
+        return await this.userRepository.save(data);
+        // return this.buildUserResponse(user)
     }
 }
