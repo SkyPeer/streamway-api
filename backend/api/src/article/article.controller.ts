@@ -1,4 +1,4 @@
-import {Controller, Post, UseGuards, Body} from "@nestjs/common";
+import {Controller, Get, Post, Param, Query, UseGuards, Body} from "@nestjs/common";
 import {ArticleService} from "@app/article/article.service";
 import {AuthGuard} from "@app/user/guards/auth.guard";
 import {User} from "@app/user/decorators/user.decorator";
@@ -10,6 +10,7 @@ import {ArticleResponseInterface} from "@app/article/types/articleResponse.inter
 @Controller('articles')
 export class ArticleController {
     constructor(private readonly articleService: ArticleService) {}
+
     @Post()
     @UseGuards(AuthGuard)
     async create(
@@ -19,5 +20,22 @@ export class ArticleController {
         const article: ArticleEntity = await this.articleService.createArticle(currentUser, createArticleDto);
         return this.articleService.buildArticleResponse(article);
     }
+
+
+    @Get('/search')
+    async findArticlesBySlug(@Query('slug') slug: string) {
+        // http://{host}/articles/search?slug=train
+        return await this.articleService.getArticlesBySlugLike(slug)
+    }
+
+    @Get('/:slug')
+    async findBySlug(@Param() param: any): Promise<ArticleResponseInterface> {
+        // http: //localhost:3000/articles/foo
+        console.log('slug', param)
+        const slug = param.slug;
+        return await this.articleService.findBySlug(slug)
+    }
+
+
 }
 
