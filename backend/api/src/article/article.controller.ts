@@ -28,12 +28,17 @@ export class ArticleController {
         return await this.articleService.getArticlesBySlugLike(slug)
     }
 
+    buildArticleResponse(article: ArticleEntity) {
+        return {article}
+    }
+
     @Get('/:slug')
     async findBySlug(@Param() param: any): Promise<ArticleResponseInterface> {
         // http: //localhost:3000/articles/foo
         console.log('slug', param)
         const slug = param.slug;
-        return await this.articleService.findBySlug(slug)
+        const article = await this.articleService.findBySlug(slug);
+        return this.buildArticleResponse(article);
     }
 
 

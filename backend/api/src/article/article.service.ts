@@ -48,8 +48,9 @@ export class ArticleService {
         return await this.articleRepository.query(`SELECT * FROM articles where slug like '%${slug}%'`);
     }
 
-    async findBySlug(slug: string): Promise<ArticleResponseInterface> {
-        const article = await this.articleRepository.findOne({where: {slug}})
-        return this.buildArticleResponse(article);
+    async findBySlug(slug: string): Promise<ArticleEntity> {
+        // const article = await this.articleRepository.findOne({where: {slug}})
+        // return this.buildArticleResponse(article);
+        return await this.articleRepository.findOne({where: {slug}})
     }
 }
