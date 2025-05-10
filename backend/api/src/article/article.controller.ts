@@ -1,4 +1,16 @@
-import {Controller, Get, Post, Param, Query, UseGuards, Body, Delete} from "@nestjs/common";
+import {
+    Controller,
+    Get,
+    Post,
+    Param,
+    Query,
+    UseGuards,
+    Body,
+    Delete,
+    Put,
+    UsePipes,
+    ValidationPipe
+} from "@nestjs/common";
 import {ArticleService} from "@app/article/article.service";
 import {AuthGuard} from "@app/user/guards/auth.guard";
 import {User} from "@app/user/decorators/user.decorator";
@@ -13,6 +25,7 @@ export class ArticleController {
 
     @Post()
     @UseGuards(AuthGuard)
+    @UsePipes(new ValidationPipe())
     async create(
         @User() currentUser: UserEntity,
         @Body('article') createArticleDto: CreateArticleDto
@@ -21,6 +34,9 @@ export class ArticleController {
         return this.articleService.buildArticleResponse(article);
     }
 
+    buildArticleResponse(article: ArticleEntity) {
+        return {article}
+    }
 
     @Get('/search')
     async findArticlesBySlug(@Query('slug') slug: string) {
@@ -28,9 +44,6 @@ export class ArticleController {
         return await this.articleService.getArticlesBySlugLike(slug)
     }
 
-    buildArticleResponse(article: ArticleEntity) {
-        return {article}
-    }
 
     @Get('/:slug')
     async findBySlug(@Param() param: any): Promise<ArticleResponseInterface> {
@@ -43,8 +56,25 @@ export class ArticleController {
 
     @Delete('/:slug')
     @UseGuards(AuthGuard)
-    async deleteArticle(@User('id') currentUserId: number, @Param('slug') slug: string, @Param('slug') param: any) {
+    async deleteArticle(
+        @User('id') currentUserId: number,
+        @Param('slug') slug: string,
+    ) {
         return this.articleService.deleteArticle(slug, currentUserId);
+    }
+
+    @Put('/update')
+    @UseGuards(AuthGuard)
+    @UsePipes(new ValidationPipe())
+    async updatePost(
+        @Query('slug') slug: string,
+        @User('id') currentUserId: number,
+        @Body('article') updateArticleDto: CreateArticleDto
+        ): Promise<ArticleResponseInterface>
+    {
+
+        const article = await this.articleService.updateArticle(slug, updateArticleDto, currentUserId);
+        return this.buildArticleResponse(article);
     }
 
 
