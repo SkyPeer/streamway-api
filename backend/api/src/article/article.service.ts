@@ -3,14 +3,19 @@ import {UserEntity} from "@app/user/user.entity";
 import {CreateArticleDto} from "@app/article/dto/createArticle.dto";
 import {ArticleEntity} from "@app/article/article.entity";
 import {InjectRepository} from "@nestjs/typeorm";
-import {Repository, DeleteResult} from "typeorm";
+import {Repository, DeleteResult, DataSource} from "typeorm";
 import slugify from "slugify";
+import {ArticlesResponseInterface} from "@app/article/types/articlesResponse.interface";
 
 @Injectable()
 export class ArticleService {
     constructor(
         @InjectRepository(ArticleEntity)
         private readonly articleRepository: Repository<ArticleEntity>,
+        private readonly dataSource: DataSource,
+
+        @InjectRepository(UserEntity)
+        private readonly userRepository: Repository<UserEntity>,
     ) {
     }
 
@@ -41,6 +46,38 @@ export class ArticleService {
             slugify(title, {lower: true}) + '-' +
             (Math.random() * Math.pow(36, 6)).toString(36)
         );
+    }
+
+    async findAll(currentUserId: number, query: any
+    ): Promise<ArticlesResponseInterface> {
+        const queryBuilder = this.dataSource.getRepository(ArticleEntity)
+            .createQueryBuilder('articles')
+            .leftJoinAndSelect('articles.author', 'author');
+
+        queryBuilder.orderBy('articles.createdAt', 'DESC');
+
+        if (query.tag) {
+            queryBuilder.andWhere('articles.tagList LIKE :tag',
+                {tag: `%${query.tag}%`});
+        }
+
+        if (query.author) {
+            const author = await this.userRepository.findOne({where: {username: query.author}});
+            queryBuilder.andWhere('articles.authorId = :id', {id: author.id});
+        }
+
+        if (query.limit) {
+            queryBuilder.limit(query.limit);
+        }
+
+        if (query.offset) {
+            queryBuilder.offset(query.offset);
+        }
+
+        const articles = await queryBuilder.getMany();
+        const articlesCount = await queryBuilder.getCount();
+
+        return {articles, articlesCount};
     }
 
     async getArticlesBySlugLike(slug: string): Promise<ArticleEntity[]> {
