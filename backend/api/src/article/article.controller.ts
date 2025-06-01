@@ -1,13 +1,13 @@
 import {
+    Body,
     Controller,
+    Delete,
     Get,
-    Post,
     Param,
+    Post,
+    Put,
     Query,
     UseGuards,
-    Body,
-    Delete,
-    Put,
     UsePipes,
     ValidationPipe
 } from "@nestjs/common";
@@ -83,6 +83,14 @@ export class ArticleController {
         return this.buildArticleResponse(article);
     }
 
+    @Post(':slug/favorite')
+    @UseGuards(AuthGuard)
+    async addArticleToFavorites(
+        @User('id') currentUserId: number,
+        @Param('slug') slug: string,
+    ): Promise<any> {
+        return await this.articleService.addArticleToFavorites(slug, currentUserId)
+    }
 
 }
 
