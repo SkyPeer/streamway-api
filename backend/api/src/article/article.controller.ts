@@ -79,6 +79,8 @@ export class ArticleController {
         ): Promise<ArticleResponseInterface>
     {
 
+        console.log('updateArticle bu slug:', slug);
+
         const article = await this.articleService.updateArticle(slug, updateArticleDto, currentUserId);
         return this.buildArticleResponse(article);
     }
@@ -90,6 +92,15 @@ export class ArticleController {
         @Param('slug') slug: string,
     ): Promise<any> {
         return await this.articleService.addArticleToFavorites(slug, currentUserId)
+    }
+
+    @Delete(':slug/favorite')
+    @UseGuards(AuthGuard)
+    async deleteArticleFromFavorites(
+        @User('id') currentUserId: number,
+        @Param('slug') slug: string,
+    ): Promise<any> {
+        return await this.articleService.deleteArticleFromFavorites(slug, currentUserId)
     }
 
 }
