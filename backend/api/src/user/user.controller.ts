@@ -15,7 +15,7 @@ import {UpdateUserDto} from "@app/user/dto/updateUser.dto";
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
-    @Post("users")
+    @Post("users/create")
     @UsePipes(new ValidationPipe())
     async createUser(@Body('user') createUserDto: CreateUserDto): Promise<UserResponseInterface> {
         return this.userService.createUser(createUserDto);
