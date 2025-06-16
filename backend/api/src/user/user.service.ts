@@ -102,4 +102,8 @@ export class UserService {
         return await this.userRepository.save(data);
         // return this.buildUserResponse(user)
     }
+
+    async getUsers(): Promise<UserEntity[]> {
+        return await this.userRepository.find();
+    }
 }
