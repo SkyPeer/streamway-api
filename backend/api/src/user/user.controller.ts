@@ -15,7 +15,7 @@ import {UpdateUserDto} from "@app/user/dto/updateUser.dto";
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
-    @Post("users")
+    @Post("users/create")
     @UsePipes(new ValidationPipe())
     async createUser(@Body('user') createUserDto: CreateUserDto): Promise<UserResponseInterface> {
         return this.userService.createUser(createUserDto);
@@ -28,6 +28,9 @@ export class UserController {
     async login(
         @Body('user') getUserDto: GetUserDto): Promise<UserResponseInterface> {
         // console.log('getUserDto', getUserDto)
+
+        console.log(getUserDto);
+
         return this.userService.login(getUserDto)
     }
 
@@ -54,5 +57,12 @@ export class UserController {
         const user = await this.userService.updateUser(userId, updateUserDto)
         return this.userService.buildUserResponse(user);
     }
+
+    @Get('users')
+    @UseGuards(AuthGuard)
+    async getUsers(): Promise<UserEntity[]> {
+        return this.userService.getUsers()
+    }
+
 
 }
