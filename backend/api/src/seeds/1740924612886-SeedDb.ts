@@ -8,9 +8,11 @@ export class SeedDb1740924612886 implements MigrationInterface {
             `INSERT INTO tags (name) VALUES ('dragons'), ('coffe'), ('nsetjs')`,
             );
 
-        // password is testpass
+        // test-user
+        // email: admin@localhost.local
+        // password: 123
         await queryRunner.query(
-            `INSERT INTO users (username, email, password) VALUES ('testuser', 'testuser@testuser.com', '')`,
+            `INSERT INTO users (username, email, password) VALUES ('admin', 'admin@localhost.local', '$2b$10$l4gEJU2.rApUAaWfUgwBtejRYZD1vhrXWFu0vq.E6sEFbdVN41B1G')`,
         );
 
         await queryRunner.query(
