@@ -1,7 +1,8 @@
-import { Injectable } from "@nestjs/common"
-import { InjectRepository } from "@nestjs/typeorm"
-import { TagEntity } from "@app/tag/tag.entity"
-import { Repository } from "typeorm"
+import {Injectable} from "@nestjs/common"
+import {InjectRepository} from "@nestjs/typeorm"
+import {TagEntity} from "@app/tag/tag.entity"
+import {Repository} from "typeorm"
+import axios, {AxiosResponse} from "axios";
 
 @Injectable()
 export class TagService {
@@ -11,33 +12,12 @@ export class TagService {
     ) {}
 
     async findAll(): Promise<TagEntity[]> {
-        /*console.log('private taName', this.tagName)*/
-        // console.log(this.tagRepo)
         return await this.tagRepository.find()
+    }
 
-        // return ["Tag1", "Tag2", "Tag3"]
+    async getTimes(): Promise<any[]> {
+        const response: AxiosResponse = await axios.get('http://localhost:8000')
+        console.log('---get items ---')
+        return response?.data || []
     }
 }
-
-// class MyClass {
-//     constructor(newData = '123') {
-//         this.newData = newData;
-//     }
-//
-//     // data = 'source' +  ' ' + this.newData
-//     getData = () => {
-//         console.log(this)
-//         const data = 'source' +  ' ' + this.newData;
-//         return data;
-//     };
-// }
-//
-// const myClass = new MyClass(321);
-//
-// // console.log('myClass', myClass.getData())
-//
-// // console.log(myClass.getData())
-//
-// const ttt  = myClass.getData()
-//
-// console.log('ttt:', ttt)
