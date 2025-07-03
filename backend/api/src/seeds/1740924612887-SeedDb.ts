@@ -16,8 +16,6 @@ const getDataSet = (dataSetCount) => {
 
     const defaultArr = ['first-article1', 'first-article1', 'first-article1', 'first-article1', 'dragons1', 1]
     for (let idx = 0; idx < dataSetCount; idx++) {
-        // const arr = [...defaultArr]
-        // arr.push(idx)
         result.push(...defaultArr);
     }
     return result;
