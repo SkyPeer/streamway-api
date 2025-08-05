@@ -36,8 +36,8 @@ const getDataSet = (dataSetCount) => {
 //     ]
 // );
 
-export class SeedDb1740924612918 implements MigrationInterface {
-    name = 'SeedDb1740924612918'
+export class SeedDb1740924612922 implements MigrationInterface {
+    name = 'SeedDb1740924612922'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         // await queryRunner.query(getSql());

@@ -6,6 +6,7 @@ import {InjectRepository} from "@nestjs/typeorm";
 import {Repository, DeleteResult, DataSource} from "typeorm";
 import slugify from "slugify";
 import {ArticlesResponseInterface} from "@app/article/types/articlesResponse.interface";
+import axios, {AxiosResponse} from "axios";
 
 @Injectable()
 export class ArticleService {
@@ -68,17 +69,14 @@ export class ArticleService {
 
         if(query.favorited) {
             const author = await this.userRepository.findOne(
-                {where: {username: query.favorited},
-                    relations: ['favorites']});
-            console.log('favorited author', author);
+                {where: {username: query.favorited}, relations: ['favorites']}
+            );
 
             if(!author) {
                 throw new HttpException("User does not exist", HttpStatus.NOT_FOUND);
             }
 
             const authorFavoriteArticlesIds = author.favorites.map((item) => item.id);
-
-            console.log('ids', authorFavoriteArticlesIds);
 
             // queryBuilder.andWhere('articles.authorId = :id', {id: ids});
             if (authorFavoriteArticlesIds.length) {
@@ -193,7 +191,6 @@ export class ArticleService {
         return article;
     }
 
-
     async deleteArticleFromFavorites(slug: string, currentUserId: number): Promise<ArticleEntity> {
         const article = await this.findBySlug(slug);
         const user = await this.userRepository.findOne({
@@ -215,6 +212,18 @@ export class ArticleService {
         return article;
     }
 
+    async getArticlesPython(): Promise<any[]> {
+        try {
+            const response: AxiosResponse = await axios.get('http://localhost:8000/articles')
+            return response?.data
+        } catch (error) {
+            if(error.response?.data?.detail) {
+                throw new HttpException(error.response?.data?.detail || "Error from Articlelytics Service", HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+                throw new HttpException("Can't connect to Articlelytics Service", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
 
+        }
+    }
 
 }
