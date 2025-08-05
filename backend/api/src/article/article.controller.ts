@@ -2,7 +2,7 @@ import {
     Body,
     Controller,
     Delete,
-    Get,
+    Get, Header,
     Param,
     Post,
     Put,
@@ -29,6 +29,13 @@ export class ArticleController {
         return await this.articleService.findAll(currentUserId, query);
     }
 
+    @Get('/python')
+    @Header("Cache-Control", "no-store")
+    // @UseGuards(AuthGuard)
+    async getPythonItems(): Promise<any[]> {
+        return await this.articleService.getArticlesPython();
+    }
+
     @Post()
     @UseGuards(AuthGuard)
     @UsePipes(new ValidationPipe())
@@ -53,8 +60,6 @@ export class ArticleController {
 
     @Get('/:slug')
     async findBySlug(@Param() param: any): Promise<ArticleResponseInterface> {
-        // http: //localhost:3000/articles/foo
-        console.log('slug', param)
         const slug = param.slug;
         const article = await this.articleService.findBySlug(slug);
         return this.buildArticleResponse(article);
@@ -78,9 +83,6 @@ export class ArticleController {
         @Body('article') updateArticleDto: CreateArticleDto
         ): Promise<ArticleResponseInterface>
     {
-
-        console.log('updateArticle bu slug:', slug);
-
         const article = await this.articleService.updateArticle(slug, updateArticleDto, currentUserId);
         return this.buildArticleResponse(article);
     }

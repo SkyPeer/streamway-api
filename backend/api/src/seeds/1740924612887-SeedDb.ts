@@ -13,10 +13,14 @@ const getValues = (dataSetCount, offset) => {
 const getDataSet = (dataSetCount) => {
 
     const result = [];
+    const sampleData = ['test-article0', 'test-article1','test-article2','test-article3'];
 
-    const defaultArr = ['first-article1', 'first-article1', 'first-article1', 'first-article1', 'dragons1', 1]
+    const defaultArr = ['first-article1', 'first-article1', 'first-article1', 'first-article1', 'dragons1', 1];
     for (let idx = 0; idx < dataSetCount; idx++) {
-        result.push(...defaultArr);
+        const randomId = Math.floor(Math.random() * 3) + 1 // 1,2,3
+        const sample = sampleData[randomId];
+        const arr = [sample, sample, sample, sample, `randomId${randomId}`, randomId];
+        result.push(...arr);
     }
     return result;
 }
@@ -32,8 +36,8 @@ const getDataSet = (dataSetCount) => {
 //     ]
 // );
 
-export class SeedDb1740924612912 implements MigrationInterface {
-    name = 'SeedDb1740924612912'
+export class SeedDb1740924612922 implements MigrationInterface {
+    name = 'SeedDb1740924612922'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         // await queryRunner.query(getSql());
