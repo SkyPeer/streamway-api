@@ -13,7 +13,9 @@ function predict(x) {
 }
 
 const trainX = [
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
 ];
 const trainY = [
     25.0, 25.5, 23.8, 21.2, 18.1, 15.3, 14.8, 16.2, 18.9, 21.4, 23.1, 24.6,
@@ -54,7 +56,7 @@ async function trainLinearRegression() {
         }
     }
 
-    // Test prediction
+    // Get predictions for training data
     const testResult = predict(tf.tensor2d([trainX]));
     const testResultData = await testResult.data()
 
@@ -64,9 +66,9 @@ async function trainLinearRegression() {
     }
 
     // Cleanup
-    testResult.dispose();
-    xData.dispose();
-    yData.dispose();
+    // testResult.dispose();
+    // xData.dispose();
+    // yData.dispose();
 
     return {
         // xs: originalPoints.map(item => item.x),
