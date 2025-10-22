@@ -256,15 +256,15 @@ const justPredictData = async () => {
 
 
 const main = async () => {
-    //const _model = await loadModelFromPostgreSQL('newModel')
-    // if (!_model) {
-    //     return await trainSeasonalModel()
-    // }
+    const _model = await loadModelFromPostgreSQL('newModel')
+    if (!_model) {
+        return await trainSeasonalModel()
+    }
 
-    //model = _model;
-    //return await justPredictData();
+    model = _model;
+    return await justPredictData();
 
-    return await trainSeasonalModel()
+    //return await trainSeasonalModel()
 }
 
 export {main}

@@ -33,17 +33,17 @@ const pgPool = new Pool({
 
 
 
-async function saveModelToPostgreSQL(model: any, modelName = 'temperature_model', trainMonthsX: any, trainY: any, ) {
+async function saveModelToPostgreSQL(model: any, modelName = 'newModel', trainMonthsX: any, trainY: any, ) {
     try {
-        console.log('saveModelToPostgreSQL', trainMonthsX);
-        console.log('saveModelToPostgreSQL', trainY);
+        // console.log('saveModelToPostgreSQL', trainMonthsX);
+        // console.log('saveModelToPostgreSQL', trainY);
         console.log('\n=== SAVING MODEL TO POSTGRESQL ===');
 
         // Get model as JSON
         const modelJSON = await model.toJSON();
         const modelTopology = JSON.stringify(modelJSON);
 
-        console.log('modelJSON', modelJSON);
+        // console.log('modelJSON', modelJSON);
 
         // Get weights as ArrayBuffer
         // const weightSpecs = modelJSON.weightSpecs;
@@ -70,22 +70,17 @@ async function saveModelToPostgreSQL(model: any, modelName = 'temperature_model'
 
         // Save to database
         const query = `
-            INSERT INTO ml_models (model_name, model_topology, weight_specs, weights, created_at)
+            INSERT INTO tf_model (model_name, model_topology, weight_specs, weights, created_at)
             VALUES ($1, $2, $3, $4, NOW())
             ON CONFLICT (model_name) 
-            DO UPDATE SET 
-                model_topology = $2,
-                weight_specs = $3,
-                weights = $4,
-                updated_at = NOW()
+            DO UPDATE SET
+                model_topology = EXCLUDED.model_topology,
+                               weight_specs = EXCLUDED.weight_specs,
+                               weights = EXCLUDED.weights,
+                               updated_at = NOW()
         `;
 
-        await pgPool.query(query, [
-            modelName,
-            modelTopology,
-            JSON.stringify(weightSpecs),
-            weightsBuffer
-        ]);
+        await pgPool.query(query, [modelName, modelTopology, JSON.stringify(weightSpecs), weightsBuffer]);
 
         console.log(`✓ Model saved to PostgreSQL: ${modelName}`);
 
