@@ -28,9 +28,9 @@ export class ForecastCityEntity {
   @OneToMany(() => ForecastTemperatureEntity, temperature => temperature.city)
   temperatures: ForecastTemperatureEntity[];
 
-  // @OneToOne(() => TFModel_Entity)
-  // @JoinColumn()
-  // tf_model: TFModel_Entity;
+  @OneToOne(() => TFModel_Entity, tfModel => tfModel.city, { onDelete: 'CASCADE',  eager: true })
+  @JoinColumn()
+  tf_model: TFModel_Entity;
 }
 
 

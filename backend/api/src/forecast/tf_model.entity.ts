@@ -26,8 +26,8 @@ export class TFModel_Entity {
     @CreateDateColumn({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
     updated_at: Date;
 
-    @Column({nullable: false})
-    cityId: number;
+    @OneToOne(() => ForecastCityEntity, city=> city.tf_model)
+    city: ForecastCityEntity;
 }
 
 
