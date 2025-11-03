@@ -50,10 +50,9 @@ async function saveModelToPostgreSQL(model: any, modelName = 'newModel', trainMo
 
         const weightData = await model.getWeights();
 
+        const description: string = 'description_model_test'
+
         const weightSpecs = weightData.map((tensor, index) => {
-
-            console.log(index, tensor);
-
             return {
                 // name: `weight_${index}`,  // You choose the name
                 //name: tensor.name,
@@ -68,19 +67,22 @@ async function saveModelToPostgreSQL(model: any, modelName = 'newModel', trainMo
             weightData.map(tensor => Buffer.from(tensor.dataSync().buffer))
         );
 
+        const cityId: number = 1;
+
         // Save to database
         const query = `
-            INSERT INTO tf_model (model_name, model_topology, weight_specs, weights, created_at)
-            VALUES ($1, $2, $3, $4, NOW())
+            INSERT INTO tf_models (model_name, model_topology, weight_specs, weights, updated_at, description, "cityId")
+            VALUES ($1, $2, $3, $4, NOW(), $5, $6)
             ON CONFLICT (model_name) 
             DO UPDATE SET
                 model_topology = EXCLUDED.model_topology,
-                               weight_specs = EXCLUDED.weight_specs,
-                               weights = EXCLUDED.weights,
-                               updated_at = NOW()
+                weight_specs = EXCLUDED.weight_specs,
+                weights = EXCLUDED.weights,
+                updated_at = NOW(),
+                description = EXCLUDED.description
         `;
 
-        await pgPool.query(query, [modelName, modelTopology, JSON.stringify(weightSpecs), weightsBuffer]);
+        await pgPool.query(query, [modelName, modelTopology, JSON.stringify(weightSpecs), weightsBuffer, description, cityId]);
 
         console.log(`✓ Model saved to PostgreSQL: ${modelName}`);
 

@@ -14,7 +14,7 @@ async function loadModelFromPostgreSQL(modelName = 'newModel') {
     try {
         console.log('\n=== LOADING MODEL FROM POSTGRESQL ===');
 
-        const query = 'SELECT model_topology, weight_specs, weights FROM tf_model WHERE model_name = $1';
+        const query = 'SELECT model_topology, weight_specs, weights FROM tf_models WHERE model_name = $1';
         const result = await pgPool.query(query, [modelName]);
 
         if (result.rows.length === 0) {
