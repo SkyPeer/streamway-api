@@ -1,0 +1,36 @@
+import {Column, Entity, PrimaryGeneratedColumn, OneToOne, JoinColumn, OneToMany, CreateDateColumn} from 'typeorm';
+import {ForecastTemperatureEntity} from "@app/forecast/forecast-temperature.entity";
+import {TFModel_Entity} from "@app/forecast/tf_model.entity";
+
+@Entity({ name: 'forecast_cities' })
+export class ForecastCityEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({type: 'decimal', precision: 10, scale: 7})
+  lat: number;
+
+  @Column({type: 'decimal', precision: 10, scale: 7})
+  lon: number;
+
+  @Column({default: ''})
+  city: string;
+
+  @Column({default: ''})
+  country: string;
+
+  @Column({default: ''})
+  description: string;
+
+  @CreateDateColumn({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
+  lastUpdated: Date;
+
+  @OneToMany(() => ForecastTemperatureEntity, temperature => temperature.city)
+  temperatures: ForecastTemperatureEntity[];
+
+  // @OneToOne(() => TFModel_Entity)
+  // @JoinColumn()
+  // tf_model: TFModel_Entity;
+}
+
+
