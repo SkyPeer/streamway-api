@@ -1,6 +1,9 @@
-import {Column, Entity, PrimaryGeneratedColumn, CreateDateColumn} from 'typeorm';
+import {Column, Entity, PrimaryGeneratedColumn,
+    CreateDateColumn, JoinColumn,
+    OneToOne, OneToMany} from 'typeorm';
+import {ForecastCityEntity} from "@app/forecast/forecast-city.entity";
 
-@Entity({name: 'tf_model'})
+@Entity({name: 'tf_models'})
 export class TFModel_Entity {
     @PrimaryGeneratedColumn()
     id: number;
@@ -17,11 +20,14 @@ export class TFModel_Entity {
     @Column({type: 'bytea', nullable: true}) // or false, depending on your requirements
     weights: Buffer; // Or Uint8Array, depending on your preference
 
-    @CreateDateColumn({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
-    created_at: Date;
+    @Column({default: ''})
+    description: string;
 
     @CreateDateColumn({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
     updated_at: Date;
+
+    @Column({nullable: false})
+    cityId: number;
 }
 
 
