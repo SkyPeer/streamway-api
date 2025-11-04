@@ -1,9 +1,9 @@
 import {Column, Entity, PrimaryGeneratedColumn, OneToOne, JoinColumn, OneToMany, CreateDateColumn} from 'typeorm';
-import {ForecastTemperatureEntity} from "@app/forecast/forecast-temperature.entity";
-import {TFModel_Entity} from "@app/forecast/tf_model.entity";
+import {ForecastTemperatureEntity} from "@app/forecast/entities/temperature.entity";
+import {TFModel_Entity} from "@app/forecast/entities/tf_model.entity";
 
 @Entity({ name: 'forecast_cities' })
-export class ForecastCityEntity {
+export class CityEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

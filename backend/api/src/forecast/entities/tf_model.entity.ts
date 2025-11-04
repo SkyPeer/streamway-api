@@ -1,7 +1,7 @@
 import {Column, Entity, PrimaryGeneratedColumn,
     CreateDateColumn, JoinColumn,
     OneToOne, OneToMany} from 'typeorm';
-import {ForecastCityEntity} from "@app/forecast/forecast-city.entity";
+import {CityEntity} from "@app/forecast/entities/city.entity";
 
 @Entity({name: 'tf_models'})
 export class TFModel_Entity {
@@ -26,8 +26,8 @@ export class TFModel_Entity {
     @CreateDateColumn({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
     updated_at: Date;
 
-    @OneToOne(() => ForecastCityEntity, city=> city.tf_model)
-    city: ForecastCityEntity;
+    @OneToOne(() => CityEntity, city=> city.tf_model)
+    city: CityEntity;
 }
 
 

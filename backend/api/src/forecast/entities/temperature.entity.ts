@@ -1,5 +1,5 @@
 import {Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne} from 'typeorm';
-import {ForecastCityEntity} from "@app/forecast/forecast-city.entity";
+import {CityEntity} from "@app/forecast/entities/city.entity";
 
 @Entity({ name: 'forecast_temperature' })
 export class ForecastTemperatureEntity {
@@ -27,8 +27,8 @@ export class ForecastTemperatureEntity {
   @Column()
   random: boolean;
 
-  @ManyToOne(() => ForecastCityEntity, city => city.temperatures, {eager: true})
-  city: ForecastCityEntity;
+  @ManyToOne(() => CityEntity, city => city.temperatures, {eager: true})
+  city: CityEntity;
 }
 
 
