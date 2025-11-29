@@ -1,48 +1,216 @@
-import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
-import {UserEntity} from "@app/user/user.entity";
-import {CreateArticleDto} from "@app/article/dto/createArticle.dto";
-import {ArticleEntity} from "@app/article/article.entity";
-import {InjectRepository} from "@nestjs/typeorm";
-import {Repository, DeleteResult, DataSource} from "typeorm";
-import slugify from "slugify";
-import {ArticlesResponseInterface} from "@app/article/types/articlesResponse.interface";
-import axios, {AxiosResponse} from "axios";
+import { HttpException, HttpStatus, Injectable, Inject } from '@nestjs/common';
+import { UserEntity } from '@app/user/user.entity';
+import { ArticleEntity } from '@app/article/article.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, DeleteResult, DataSource } from 'typeorm';
+// import tf from "@tensorflow/tfjs-node";
+
+const tf = require('@tensorflow/tfjs-node');
+
+// import { saveModelToPostgreSQL } from '@app/forecast/save_model';
+import { loadModelFromPostgreSQL } from '@app/forecast/load_model';
+import { TrainingService } from '@app/forecast/forecast.training.service';
+import { SaveModelService } from '@app/forecast/forecast.saveModel.service';
+import { LoadModelService } from '@app/forecast/forecast.loadModel.service';
+
+const trainMonthsX = [
+  // 2022: months 1-12
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+  // 2023: months 13-24
+  13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+  // 2024: months 25-36
+  25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,
+];
+
+const trainY = [
+  // 2022 temperatures
+  25.0, 25.5, 23.8, 21.2, 18.1, 15.3, 14.8, 16.2, 18.9, 21.4, 23.1, 24.6,
+  // 2023 temperatures
+  26.1, 26.3, 24.2, 21.8, 18.5, 15.7, 14.2, 15.8, 19.3, 21.8, 23.7, 25.2,
+  // 2024 temperatures
+  25.4, 25.8, 23.5, 20.9, 17.6, 14.9, 14.5, 16.0, 18.6, 21.1, 22.8, 24.3,
+];
+
+let model;
+
+// CreateModel
+function createModel() {
+  model = tf.sequential({
+    layers: [
+      tf.layers.dense({ inputShape: [3], units: 8, activation: 'relu' }),
+      tf.layers.dense({ units: 1 }),
+    ],
+  });
+  model.compile({
+    optimizer: tf.train.adam(0.01),
+    loss: 'meanSquaredError',
+  });
+  return model;
+}
+
+// Helper function to create seasonal features
+function createFeatures(monthNumbers) {
+  console.log('\n=== createFeatures === START === ');
+  const features = [];
+
+  for (const month of monthNumbers) {
+    // Get the month within year (1-12)
+    const monthInYear = ((month - 1) % 12) + 1;
+
+    // Create seasonal features using sine and cosine
+    // This captures the cyclical nature of seasons
+    const angle = (2 * Math.PI * monthInYear) / 12;
+    const sinSeason = Math.sin(angle);
+    const cosSeason = Math.cos(angle);
+
+    // Also include a trend component (normalized month number)
+    const trend = month / 36; // Normalize to 0-1 range
+
+    features.push([sinSeason, cosSeason, trend]);
+  }
+
+  return features;
+}
 
 @Injectable()
 export class ForecastService {
-    constructor(
-        @InjectRepository(ArticleEntity)
-        private readonly articleRepository: Repository<ArticleEntity>,
-        private readonly dataSource: DataSource,
+  constructor(
+    private readonly dataSource: DataSource,
+    //
+    // @InjectRepository(UserEntity)
+    // private readonly userRepository: Repository<UserEntity>,
+    //
+    // private readonly saveTrainingModel: ForecastService,
 
-        @InjectRepository(UserEntity)
-        private readonly userRepository: Repository<UserEntity>,
-    ) {
+    private readonly trainingService: TrainingService,
+    private readonly saveModel: SaveModelService,
+    private readonly loadModel: LoadModelService,
+  ) {}
+
+  //TODO: GetData FromDataBase
+  get seasonsData() {
+    return {
+      trainMonthsX,
+      trainY,
+      newData: this.trainingService.data,
+    };
+  }
+
+  // Private?
+  async trainModel() {
+    console.log('Creating model with seasonal features...');
+    createModel();
+
+    // Create features with seasonal patterns
+    const trainFeatures = createFeatures(trainMonthsX);
+    const xData = tf.tensor2d(trainFeatures);
+    const yData = tf.tensor2d(trainY, [trainY.length, 1]);
+
+    // Train the model
+    console.log('Training model...');
+    await model.fit(xData, yData, {
+      epochs: 200, // 200
+      batchSize: 12,
+      callbacks: {
+        onEpochEnd: (epoch, logs) => {
+          if (epoch % 50 === 0) {
+            console.log(`Epoch ${epoch}: loss = ${logs.loss.toFixed(4)}`);
+          }
+        },
+      },
+    });
+
+    //await saveModelToPostgreSQL(model, 'newModel', trainMonthsX, trainY);
+    await this.saveModel.saveModelToPostgreSQL(model, 'newModel');
+  }
+
+  private async predictData() {
+    // ============================================
+    // PREDICT FOR NEXT YEAR (2025)
+    // Months 37-48
+    // ============================================
+
+    console.log('\n=== PREDICTIONS FOR NEXT YEAR (2025) from Save Model ===');
+
+    const nextYearMonths = [37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48];
+    const nextYearFeatures = createFeatures(nextYearMonths);
+    const nextYearX = tf.tensor2d(nextYearFeatures);
+    const nextYearPredictions = model.predict(nextYearX);
+    const nextYearData = await nextYearPredictions.data();
+
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    const nextYearResults = [];
+    for (let i = 0; i < nextYearMonths.length; i++) {
+      const monthNum = nextYearMonths[i];
+      const calendarMonth = ((monthNum - 1) % 12) + 1;
+      const temp = nextYearData[i];
+      nextYearResults.push({
+        monthNumber: monthNum,
+        calendarMonth: calendarMonth,
+        monthName: monthNames[i],
+        temperature: temp,
+      });
+      console.log(`${monthNames[i]} 2025: ${temp.toFixed(1)}°C`);
     }
 
-    buildArticleResponse(article: ArticleEntity) {
-        return {article}
+    // ============================================
+    // VALIDATION: Compare predictions vs actual for 2024
+    // ============================================
+    console.log('\n=== VALIDATION: 2024 Actual vs Predicted ===');
+
+    // Cleanup
+    // trainPredictions.dispose();
+    nextYearX.dispose();
+    nextYearPredictions.dispose();
+    // xData.dispose();
+    // yData.dispose();
+
+    return {
+      originalPoints: trainMonthsX.map((item, idx) => ({
+        x: item,
+        y: trainY[idx],
+      })),
+      originalPointsX: trainMonthsX,
+      originalPointsY: trainY,
+
+      // predictedPoints,
+      // predictedPointsX: predictedPoints.map(item => item.x),
+      // predictedPointsY: predictedPoints.map(item => item.y),
+
+      nextYearPredictions: nextYearResults.map((item) => ({
+        x: item.monthNumber,
+        y: item.temperature,
+      })),
+      nextYearX: nextYearResults.map((item) => item.monthNumber),
+      nextYearY: nextYearResults.map((item) => item.temperature),
+    };
+  }
+
+  async predict() {
+    // const _model = await loadModelFromPostgreSQL('newModel');
+    const _model = await this.loadModel.loadModelFromPostgreSQL('newModel');
+    if (!_model) {
+      // TODO: Create model
+      await this.predictData();
     }
 
-    private getSlug(title: string): string {
-        return (
-            slugify(title, {lower: true}) + '-' +
-            (Math.random() * Math.pow(36, 6)).toString(36)
-        );
-    }
+    model = _model;
+    return await this.predictData();
 
-    async getArticlesBySlugLike(slug: string): Promise<ArticleEntity[]> {
-        // return await this.articleRepository.find({where: {slug: slug}})
-        // SELECT * FROM public.articles where articles.slug like '%train%'
-        return await this.articleRepository.query(`SELECT *
-                                                   FROM articles
-                                                   where slug like '%${slug}%'`);
-    }
-
-    async findBySlug(slug: string): Promise<ArticleEntity> {
-        // const article = await this.articleRepository.findOne({where: {slug}})
-        // return this.buildArticleResponse(article);
-        return await this.articleRepository.findOne({where: {slug}})
-    }
-
+    //return await trainSeasonalModel()
+  }
 }

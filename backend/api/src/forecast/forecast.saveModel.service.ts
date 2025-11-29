@@ -58,17 +58,17 @@ export class SaveModelService {
       const cityId: number = 1;
 
       // Save to database
-      const query = `
-            INSERT INTO tf_models (model_name, model_topology, weight_specs, weights, updated_at, description)
-            VALUES ($1, $2, $3, $4, NOW(), $5)
-            ON CONFLICT (model_name) 
-            DO UPDATE SET
-                model_topology = EXCLUDED.model_topology,
-                weight_specs = EXCLUDED.weight_specs,
-                weights = EXCLUDED.weights,
-                updated_at = NOW(),
-                description = EXCLUDED.description
-        `;
+      // const query = `
+      //       INSERT INTO tf_models (model_name, model_topology, weight_specs, weights, updated_at, description)
+      //       VALUES ($1, $2, $3, $4, NOW(), $5)
+      //       ON CONFLICT (model_name)
+      //       DO UPDATE SET
+      //           model_topology = EXCLUDED.model_topology,
+      //           weight_specs = EXCLUDED.weight_specs,
+      //           weights = EXCLUDED.weights,
+      //           updated_at = NOW(),
+      //           description = EXCLUDED.description
+      //   `;
 
       // await pgPool.query(query, [
       //   modelName,
