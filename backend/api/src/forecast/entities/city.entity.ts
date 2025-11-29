@@ -1,36 +1,45 @@
-import {Column, Entity, PrimaryGeneratedColumn, OneToOne, JoinColumn, OneToMany, CreateDateColumn} from 'typeorm';
-import {ForecastTemperatureEntity} from "@app/forecast/entities/temperature.entity";
-import {TFModel_Entity} from "@app/forecast/entities/tf_model.entity";
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  OneToOne,
+  JoinColumn,
+  OneToMany,
+  CreateDateColumn,
+} from 'typeorm';
+import { ForecastTemperatureEntity } from '@app/forecast/entities/temperature.entity';
+import { TFModel_Entity } from '@app/forecast/entities/tf_model.entity';
 
 @Entity({ name: 'forecast_cities' })
 export class CityEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({type: 'decimal', precision: 10, scale: 7})
+  @Column({ type: 'decimal', precision: 10, scale: 7 })
   lat: number;
 
-  @Column({type: 'decimal', precision: 10, scale: 7})
+  @Column({ type: 'decimal', precision: 10, scale: 7 })
   lon: number;
 
-  @Column({default: ''})
+  @Column({ default: '' })
   city: string;
 
-  @Column({default: ''})
+  @Column({ default: '' })
   country: string;
 
-  @Column({default: ''})
+  @Column({ default: '' })
   description: string;
 
-  @CreateDateColumn({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   lastUpdated: Date;
 
-  @OneToMany(() => ForecastTemperatureEntity, temperature => temperature.city)
+  @OneToMany(() => ForecastTemperatureEntity, (temperature) => temperature.city)
   temperatures: ForecastTemperatureEntity[];
 
-  @OneToOne(() => TFModel_Entity, tfModel => tfModel.city, { onDelete: 'CASCADE',  eager: true })
+  @OneToOne(() => TFModel_Entity, (tfModel) => tfModel.city, {
+    onDelete: 'CASCADE',
+    eager: true,
+  })
   @JoinColumn()
   tf_model: TFModel_Entity;
 }
-
-
