@@ -1,18 +1,11 @@
 import { HttpException, HttpStatus, Injectable, Inject } from '@nestjs/common';
-import { UserEntity } from '@app/user/user.entity';
-import { ArticleEntity } from '@app/article/article.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DeleteResult, DataSource } from 'typeorm';
-// import tf from "@tensorflow/tfjs-node";
-
-const tf = require('@tensorflow/tfjs-node');
-
-// import { saveModelToPostgreSQL } from '@app/forecast/save_model';
-import { loadModelFromPostgreSQL } from '@app/forecast/load_model';
+import * as tf from '@tensorflow/tfjs-node';
 import { TrainingService } from '@app/forecast/forecast.training.service';
 import { SaveModelService } from '@app/forecast/forecast.saveModel.service';
 import { LoadModelService } from '@app/forecast/forecast.loadModel.service';
 
+// SAMPLE DATA
 const trainMonthsX = [
   // 2022: months 1-12
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
