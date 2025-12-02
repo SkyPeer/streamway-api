@@ -94,17 +94,21 @@ export class SaveModelService {
       saveModel.weights = weightsBuffer;
       saveModel.description = description;
 
-      await this.modelRepository.save(saveModel);
+      const savedModel = await this.modelRepository.save(saveModel);
 
-      console.log(`✓ Model saved to PostgreSQL: ${modelName}`);
+      console.log(
+        `✓ Model saved to PostgreSQL: ${modelName}`,
+        'result',
+        savedModel,
+      );
 
-      // Cleanup
-      //        weightData.forEach(tensor => tensor.dispose());
+      // TODO: Cleanup
+      // weightData.forEach(tensor => tensor.dispose());
 
-      return true;
-    } catch (error) {
-      console.error('Error saving to PostgreSQL:', error);
-      return false;
+      return savedModel;
+    } catch (err) {
+      console.error('Error saving to PostgreSQL:', err);
+      throw err;
     }
   }
 }

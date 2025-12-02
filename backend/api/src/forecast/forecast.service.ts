@@ -1,9 +1,12 @@
 import { HttpException, HttpStatus, Injectable, Inject } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DeleteResult, DataSource } from 'typeorm';
 import * as tf from '@tensorflow/tfjs-node';
-import { TrainingService } from '@app/forecast/forecast.training.service';
+//import { TrainingService } from '@app/forecast/forecast.training.service';
 import { SaveModelService } from '@app/forecast/forecast.saveModel.service';
 import { LoadModelService } from '@app/forecast/forecast.loadModel.service';
+import { TF_trainingEntity } from '@app/forecast/entities/tf_training.entity';
+import { TFModel_Entity } from '@app/forecast/entities/tf_model.entity';
 
 // SAMPLE DATA
 const trainMonthsX = [
@@ -69,15 +72,20 @@ function createFeatures(monthNumbers) {
 export class ForecastService {
   constructor(
     private readonly dataSource: DataSource,
+
     //
     // @InjectRepository(UserEntity)
     // private readonly userRepository: Repository<UserEntity>,
     //
     // private readonly saveTrainingModel: ForecastService,
 
-    private readonly trainingService: TrainingService,
+    // private readonly trainingService: TrainingService,
+    @InjectRepository(TF_trainingEntity)
+    private readonly trainingRepository: Repository<TF_trainingEntity>,
+
     private readonly saveModel: SaveModelService,
     private readonly loadModel: LoadModelService,
+    private readonly loadModelService: LoadModelService,
   ) {}
 
   //TODO: GetData FromDataBase
@@ -85,36 +93,56 @@ export class ForecastService {
     return {
       trainMonthsX,
       trainY,
-      newData: this.trainingService.data,
+      // newData: this.trainingService.data,
     };
   }
 
   // Private?
   async trainModel() {
-    console.log('Creating model with seasonal features...');
-    createModel();
+    try {
+      console.log('Creating model with seasonal features...');
+      createModel();
 
-    // Create features with seasonal patterns
-    const trainFeatures = createFeatures(trainMonthsX);
-    const xData = tf.tensor2d(trainFeatures);
-    const yData = tf.tensor2d(trainY, [trainY.length, 1]);
+      const trainingLog: any[] = [];
 
-    // Train the model
-    console.log('Training model...');
-    await model.fit(xData, yData, {
-      epochs: 200, // 200
-      batchSize: 12,
-      callbacks: {
-        onEpochEnd: (epoch, logs) => {
-          if (epoch % 50 === 0) {
-            console.log(`Epoch ${epoch}: loss = ${logs.loss.toFixed(4)}`);
-          }
+      // Create features with seasonal patterns
+      const trainFeatures = createFeatures(trainMonthsX);
+      const xData = tf.tensor2d(trainFeatures);
+      const yData = tf.tensor2d(trainY, [trainY.length, 1]);
+
+      // Train the model
+      console.log('Training model...');
+      await model.fit(xData, yData, {
+        epochs: 200, // 200  //TODO: config!
+        batchSize: 12, // 12 //TODO: config!
+        callbacks: {
+          onEpochEnd: (epoch: number, logs: any) => {
+            console.log('epoch:', epoch, ' - Log:', logs.loss);
+            trainingLog.push({ epoch, loss: logs.loss });
+            if (epoch % 50 === 0) {
+              //console.log(`Epoch ${epoch}: loss = ${logs.loss.toFixed(4)}`);
+            }
+          },
         },
-      },
-    });
+      });
 
-    //await saveModelToPostgreSQL(model, 'newModel', trainMonthsX, trainY);
-    await this.saveModel.saveModelToPostgreSQL(model, 'newModel');
+      console.log('trainModelLog...', trainingLog);
+      //await saveModelToPostgreSQL(model, 'newModel', trainMonthsX, trainY);
+      const savedModel: TFModel_Entity =
+        await this.saveModel.saveModelToPostgreSQL(model, 'newModel');
+
+      const { id } = savedModel;
+      console.log('savedModel Id=', id);
+      const data: TF_trainingEntity[] = trainingLog.map((item) => ({
+        ...item,
+        model: savedModel,
+      }));
+      console.log('trainData:', data);
+      await this.trainingRepository.insert(data);
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
   }
 
   private async predictData() {

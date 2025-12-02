@@ -9,7 +9,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { CityEntity } from '@app/forecast/entities/city.entity';
-import { TF_training } from '@app/forecast/entities/tf_training.entity';
+import { TF_trainingEntity } from '@app/forecast/entities/tf_training.entity';
 
 @Entity({ name: 'tf_models' })
 export class TFModel_Entity {
@@ -37,6 +37,6 @@ export class TFModel_Entity {
   @OneToOne(() => CityEntity, (city) => city.tf_model)
   city: CityEntity;
 
-  @OneToMany(() => TF_training, (train) => train.model, { eager: true })
-  train: TF_training;
+  @OneToMany(() => TF_trainingEntity, (train) => train.model)
+  trainings: TF_trainingEntity[];
 }
