@@ -1,30 +1,48 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 const getValues = (dataSetCount, offset) => {
-    const valuesSql = []
+  const valuesSql = [];
 
-    for (let idx = 0; idx < dataSetCount; idx++ ) {
-        valuesSql.push(`($${idx * offset + 1}, $${idx * offset + 2}, $${idx * offset + 3}, $${idx * offset + 4}, $${idx * offset + 5}, $${idx * offset + 6})`);
-
-    }
-    return valuesSql
-}
+  for (let idx = 0; idx < dataSetCount; idx++) {
+    valuesSql.push(
+      `($${idx * offset + 1}, $${idx * offset + 2}, $${idx * offset + 3}, $${idx * offset + 4}, $${idx * offset + 5}, $${idx * offset + 6})`,
+    );
+  }
+  return valuesSql;
+};
 
 const getDataSet = (dataSetCount) => {
+  const result = [];
+  const sampleData = [
+    'test-article0',
+    'test-article1',
+    'test-article2',
+    'test-article3',
+  ];
 
-    const result = [];
-    const sampleData = ['test-article0', 'test-article1','test-article2','test-article3'];
-
-    const defaultArr = ['first-article1', 'first-article1', 'first-article1', 'first-article1', 'dragons1', 1];
-    for (let idx = 0; idx < dataSetCount; idx++) {
-        const randomId = Math.floor(Math.random() * 3) + 1 // 1,2,3
-        const sample = sampleData[randomId];
-        const arr = [sample, sample, sample, sample, `randomId${randomId}`, randomId];
-        result.push(...arr);
-    }
-    return result;
-}
-
+  const defaultArr = [
+    'first-article1',
+    'first-article1',
+    'first-article1',
+    'first-article1',
+    'dragons1',
+    1,
+  ];
+  for (let idx = 0; idx < dataSetCount; idx++) {
+    const randomId = Math.floor(Math.random() * 3) + 1; // 1,2,3
+    const sample = sampleData[randomId];
+    const arr = [
+      sample,
+      sample,
+      sample,
+      sample,
+      `randomId${randomId}`,
+      randomId,
+    ];
+    result.push(...arr);
+  }
+  return result;
+};
 
 // Source
 // await queryRunner.query(
@@ -37,18 +55,17 @@ const getDataSet = (dataSetCount) => {
 // );
 
 export class SeedDb1740924612922 implements MigrationInterface {
-    name = 'SeedDb1740924612922'
+  name = 'SeedDb1740924612922';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        // await queryRunner.query(getSql());
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    // await queryRunner.query(getSql());
 
-        await queryRunner.query(
-            `INSERT INTO articles (slug, title, description, body, "tagList", "authorId")
-             VALUES ${getValues(10000,6)};`,
-            [...getDataSet(10000)]
-        );
+    await queryRunner.query(
+      `INSERT INTO articles (slug, title, description, body, "tagList", "authorId")
+             VALUES ${getValues(10000, 6)};`,
+      [...getDataSet(10000)],
+    );
+  }
 
-    }
-
-    public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> {}
 }
