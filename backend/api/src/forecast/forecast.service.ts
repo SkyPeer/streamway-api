@@ -26,12 +26,11 @@ const trainY = [
   // 2024 temperatures
   25.4, 25.8, 23.5, 20.9, 17.6, 14.9, 14.5, 16.0, 18.6, 21.1, 22.8, 24.3,
 ];
-
-let model;
+//let model;
 
 // CreateModel
 function createModel() {
-  model = tf.sequential({
+  const model = tf.sequential({
     layers: [
       tf.layers.dense({ inputShape: [3], units: 8, activation: 'relu' }),
       tf.layers.dense({ units: 1 }),
@@ -72,20 +71,10 @@ function createFeatures(monthNumbers) {
 export class ForecastService {
   constructor(
     private readonly dataSource: DataSource,
-
-    //
-    // @InjectRepository(UserEntity)
-    // private readonly userRepository: Repository<UserEntity>,
-    //
-    // private readonly saveTrainingModel: ForecastService,
-
-    // private readonly trainingService: TrainingService,
     @InjectRepository(TF_trainingEntity)
     private readonly trainingRepository: Repository<TF_trainingEntity>,
-
     private readonly saveModel: SaveModelService,
     private readonly loadModel: LoadModelService,
-    private readonly loadModelService: LoadModelService,
   ) {}
 
   //TODO: GetData FromDataBase
@@ -101,7 +90,7 @@ export class ForecastService {
   async trainModel() {
     try {
       console.log('Creating model with seasonal features...');
-      createModel();
+      const model = createModel();
 
       const trainingLog: any[] = [];
 
@@ -139,13 +128,14 @@ export class ForecastService {
       }));
       console.log('trainData:', data);
       await this.trainingRepository.insert(data);
+      return model;
     } catch (err) {
-      console.error(err);
+      console.error('Error training Model', err);
       throw err;
     }
   }
 
-  private async predictData() {
+  private async predictData(model) {
     // ============================================
     // PREDICT FOR NEXT YEAR (2025)
     // Months 37-48
@@ -223,14 +213,15 @@ export class ForecastService {
 
   async predict() {
     // const _model = await loadModelFromPostgreSQL('newModel');
-    const _model = await this.loadModel.loadModelFromPostgreSQL('newModel');
-    if (!_model) {
+    const model = await this.loadModel.loadModelFromPostgreSQL('newModel');
+    if (!model) {
       // TODO: Create model
-      await this.predictData();
+      const trainedModel = await this.trainModel();
+      return await this.predictData(trainedModel);
     }
 
-    model = _model;
-    return await this.predictData();
+    //model = _model;
+    return await this.predictData(model);
 
     //return await trainSeasonalModel()
   }
