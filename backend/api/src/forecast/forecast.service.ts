@@ -26,7 +26,6 @@ const trainY = [
   // 2024 temperatures
   25.4, 25.8, 23.5, 20.9, 17.6, 14.9, 14.5, 16.0, 18.6, 21.1, 22.8, 24.3,
 ];
-//let model;
 
 // CreateModel
 function createModel() {
@@ -115,19 +114,39 @@ export class ForecastService {
         },
       });
 
-      console.log('trainModelLog...', trainingLog);
       //await saveModelToPostgreSQL(model, 'newModel', trainMonthsX, trainY);
+
+      // ============================================
+      // Save TrainedModel
+      // ============================================
       const savedModel: TFModel_Entity =
         await this.saveModel.saveModelToPostgreSQL(model, 'newModel');
 
-      const { id } = savedModel;
-      console.log('savedModel Id=', id);
+      // ============================================
+      // Save TrainingLog
+      // ============================================
       const data: TF_trainingEntity[] = trainingLog.map((item) => ({
         ...item,
         model: savedModel,
       }));
-      console.log('trainData:', data);
       await this.trainingRepository.insert(data);
+
+      // ============================================
+      // Get predictions for training data
+      // ============================================
+      const trainPredictions: any = model.predict(xData);
+      const trainPredictionsData = await trainPredictions.data();
+
+      const predictedPoints = [];
+      for (let i = 0; i < trainMonthsX.length; i++) {
+        predictedPoints.push({
+          x: trainMonthsX[i],
+          y: trainPredictionsData[i],
+        });
+      }
+
+      console.log(predictedPoints);
+
       return model;
     } catch (err) {
       console.error('Error training Model', err);
