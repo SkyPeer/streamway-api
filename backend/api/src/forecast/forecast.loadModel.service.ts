@@ -15,15 +15,9 @@ export class LoadModelService {
     try {
       console.log('\n=== LOADING MODEL FROM POSTGRESQL ===');
 
-      // const query =
-      //   'SELECT model_topology, weight_specs, weights FROM tf_models WHERE model_name = $1';
-      // const result = await pgPool.query(query, [modelName]);
       const result = await this.modelRepository.findOne({
         where: { model_name: 'newModel' },
       });
-
-      // if (result.rows.length === 0) {
-      // }
 
       if (!result) {
         console.log('ERROR MODEL FROM POSTGRESQL');
@@ -65,8 +59,8 @@ export class LoadModelService {
       // weightTensors.forEach(tensor => tensor.dispose());
 
       return model;
-    } catch (error) {
-      console.error('Error loading from PostgreSQL:', error);
+    } catch (err) {
+      console.error('Error loading from PostgreSQL:', err);
       return null;
     }
   }
