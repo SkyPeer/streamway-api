@@ -7,6 +7,7 @@ import { SaveModelService } from '@app/forecast/forecast.saveModel.service';
 import { LoadModelService } from '@app/forecast/forecast.loadModel.service';
 import { TF_trainingEntity } from '@app/forecast/entities/tf_training.entity';
 import { TFModel_Entity } from '@app/forecast/entities/tf_model.entity';
+import { AverageTemperatureEntity } from '@app/forecast/entities/average_temperature.entity';
 
 // SAMPLE DATA
 const trainMonthsX = [
@@ -70,6 +71,8 @@ function createFeatures(monthNumbers) {
 export class ForecastService {
   constructor(
     private readonly dataSource: DataSource,
+    @InjectRepository(AverageTemperatureEntity)
+    private readonly averageTemperatureRepository: Repository<AverageTemperatureEntity>,
     @InjectRepository(TF_trainingEntity)
     private readonly trainingRepository: Repository<TF_trainingEntity>,
     private readonly saveModel: SaveModelService,
@@ -85,7 +88,7 @@ export class ForecastService {
     };
   }
 
-  // Private?
+  // TODO: Maybe Private?
   async trainModel() {
     try {
       console.log('Creating model with seasonal features...');
@@ -144,6 +147,22 @@ export class ForecastService {
           y: trainPredictionsData[i],
         });
       }
+
+      const months: number[] = predictedPoints.map((item) => item.x);
+      // const predicts: number[] = predictedPoints.map((item) => item.y);
+      const predicts: any = predictedPoints
+        .map((item) => `WHEN month = ${item.x} THEN ${item.y}`)
+        .join(' ');
+
+
+      console.log('Months', months);
+
+      await this.averageTemperatureRepository
+        .createQueryBuilder('averageTemperature')
+        .update(AverageTemperatureEntity)
+        .set({ predict: () => `CASE ${predicts} END` })
+        .where('month IN (:...months)', { months })
+        .execute();
 
       console.log(predictedPoints);
 
