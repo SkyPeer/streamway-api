@@ -49,7 +49,7 @@ export class LoadModelService {
         offset += bytes;
       }
 
-      console.log('weightTensors', weightTensors);
+      // console.log('weightTensors', weightTensors);
 
       // Set the loaded weights to the model
       model.setWeights(weightTensors);

@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'average_temperature' })
-export class ForecastTemperatureEntity {
+export class AverageTemperatureEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
