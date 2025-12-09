@@ -37,7 +37,7 @@ export class ForecastController {
   @Header('Cache-Control', 'no-store')
   // @UseGuards(AuthGuard)
   async getInitialData() {
-    return this.forecastService.seasonsData;
+    return await this.forecastService.getSeasonsData();
   }
 
   @Get('/train')
