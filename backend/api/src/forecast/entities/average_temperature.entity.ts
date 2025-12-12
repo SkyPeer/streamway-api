@@ -5,7 +5,7 @@ export class AverageTemperatureEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 7 })
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
   temp: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
