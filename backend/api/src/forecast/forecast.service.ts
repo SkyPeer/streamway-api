@@ -9,25 +9,6 @@ import { TF_trainingEntity } from '@app/forecast/entities/tf_training.entity';
 import { TFModel_Entity } from '@app/forecast/entities/tf_model.entity';
 import { AverageTemperatureEntity } from '@app/forecast/entities/average_temperature.entity';
 
-// SAMPLE DATA
-// const trainMonthsX = [
-//   // 2022: months 1-12
-//   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-//   // 2023: months 13-24
-//   13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
-//   // 2024: months 25-36
-//   25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,
-// ];
-//
-// const trainY = [
-//   // 2022 temperatures
-//   25.0, 25.5, 23.8, 21.2, 18.1, 15.3, 14.8, 16.2, 18.9, 21.4, 23.1, 24.6,
-//   // 2023 temperatures
-//   26.1, 26.3, 24.2, 21.8, 18.5, 15.7, 14.2, 15.8, 19.3, 21.8, 23.7, 25.2,
-//   // 2024 temperatures
-//   25.4, 25.8, 23.5, 20.9, 17.6, 14.9, 14.5, 16.0, 18.6, 21.1, 22.8, 24.3,
-// ];
-
 // CreateModel
 function createModel() {
   const model = tf.sequential({
@@ -79,14 +60,35 @@ export class ForecastService {
     private readonly loadModel: LoadModelService,
   ) {}
 
-  //TODO: GetData FromDataBase
-  async getSeasonsData(): Promise<{ temp: number; month: number }[]> {
+  // TODO: GetData FromDataBase
+  // async function getPartialTemperatures(): Promise<Partial<AverageTemperatureEntity>[]> {
+  async getSeasonsData(): Promise<any> {
     const data = await this.averageTemperatureRepository.find();
-    return data.map((item) => ({
-      month: Number(item.month),
-      temp: Number(item.temp),
-    }));
-    // return data.map(item => ({}))
+
+    const labels = data.map((item) => Number(item.month));
+    const predicts = [];
+    const trainings = [];
+    const temps = [];
+
+    data.forEach((item) => {
+      if (item.temp) {
+        temps.push({ x: Number(item.month), y: Number(item.temp) });
+        trainings.push({ x: Number(item.month), y: Number(item.predict) });
+      } else {
+        predicts.push({ x: Number(item.month), y: Number(item.predict) });
+      }
+    });
+
+    const lastTraining = trainings[trainings.length - 1];
+    predicts.unshift(lastTraining);
+
+    return {
+      labels,
+      predicts,
+      trainings,
+      temps,
+    };
+
   }
 
   // private async getAverageTemperatureData(): Promise<AverageTemperatureEntity[]> {
@@ -231,7 +233,11 @@ export class ForecastService {
       console.log(`${monthNames[i]} 2025: ${temp.toFixed(1)}°C`);
     }
 
-    // TODO: SAVE Predict in Table
+    const data: any = nextYearResults.map((item) => ({
+      month: item.monthNumber,
+      predict: item.temperature,
+    }));
+    await this.averageTemperatureRepository.save(data);
 
     // ============================================
     // VALIDATION: Compare predictions vs actual for 2024

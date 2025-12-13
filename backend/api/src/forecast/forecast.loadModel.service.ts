@@ -3,13 +3,24 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TFModel_Entity } from '@app/forecast/entities/tf_model.entity';
 import * as tf from '@tensorflow/tfjs-node';
+import { TF_trainingEntity } from '@app/forecast/entities/tf_training.entity';
 
 @Injectable()
 export class LoadModelService {
   constructor(
     @InjectRepository(TFModel_Entity)
     private readonly modelRepository: Repository<TFModel_Entity>,
+    @InjectRepository(TF_trainingEntity)
+    private readonly trainingRepository: Repository<TF_trainingEntity>,
   ) {}
+
+  async getTrainings(): Promise<Partial<TF_trainingEntity>[]> {
+    const data = await this.trainingRepository.find();
+    return data.map((training) => ({
+      epoch: Number(training.epoch),
+      loss: Number(training.loss),
+    }));
+  }
 
   async loadModelFromPostgreSQL(modelName = 'newModel') {
     try {

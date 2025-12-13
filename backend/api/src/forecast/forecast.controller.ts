@@ -22,10 +22,14 @@ import { ArticleResponseInterface } from '@app/article/types/articleResponse.int
 import { ArticlesResponseInterface } from '@app/article/types/articlesResponse.interface';
 import { main } from '@app/forecast/forecast_tf_months';
 import { ForecastService } from '@app/forecast/forecast.service';
+import { LoadModelService } from '@app/forecast/forecast.loadModel.service';
 
 @Controller('forecast')
 export class ForecastController {
-  constructor(private readonly forecastService: ForecastService) {}
+  constructor(
+    private readonly forecastService: ForecastService,
+    private readonly loadModelService: LoadModelService,
+  ) {}
 
   @Get('/test')
   @Header('Cache-Control', 'no-store')
@@ -52,5 +56,12 @@ export class ForecastController {
   // @UseGuards(AuthGuard)
   async predict() {
     return this.forecastService.predict();
+  }
+
+  @Get('/model')
+  @Header('Cache-Control', 'no-store')
+  // @UseGuards(AuthGuard)
+  async model() {
+    return this.loadModelService.getTrainings();
   }
 }
