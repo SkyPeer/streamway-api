@@ -1,0 +1,32 @@
+[
+  {
+    "name": "weight_0",
+    "shape": [
+      3,
+      8
+    ],
+    "dtype": "float32"
+  },
+  {
+    "name": "weight_1",
+    "shape": [
+      8
+    ],
+    "dtype": "float32"
+  },
+  {
+    "name": "weight_2",
+    "shape": [
+      8,
+      1
+    ],
+    "dtype": "float32"
+  },
+  {
+    "name": "weight_3",
+    "shape": [
+      1
+    ],
+    "dtype": "float32"
+  }
+]
