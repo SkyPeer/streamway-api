@@ -1,8 +1,8 @@
-import { loadModelFromPostgreSQL } from '@app/forecast/load_model';
+import { loadModelFromPostgreSQL } from './load_model';
 const tf = require('@tensorflow/tfjs-node');
 const fs = require('fs').promises;
 const path = require('path');
-import { saveModelToPostgreSQL } from '@app/forecast/save_model';
+import { saveModelToPostgreSQL } from './save_model';
 
 const trainMonthsX = [
   // 2022: months 1-12
