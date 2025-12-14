@@ -16,11 +16,6 @@ import { ArticleService } from '@app/article/article.service';
 import { AuthGuard } from '@app/user/guards/auth.guard';
 import { User } from '@app/user/decorators/user.decorator';
 import { UserEntity } from '@app/user/user.entity';
-import { ArticleEntity } from '@app/article/article.entity';
-import { CreateArticleDto } from '@app/article/dto/createArticle.dto';
-import { ArticleResponseInterface } from '@app/article/types/articleResponse.interface';
-import { ArticlesResponseInterface } from '@app/article/types/articlesResponse.interface';
-import { main } from '@app/forecast/forecast_tf_months';
 import { ForecastService } from '@app/forecast/forecast.service';
 import { LoadModelService } from '@app/forecast/forecast.loadModel.service';
 
@@ -30,12 +25,6 @@ export class ForecastController {
     private readonly forecastService: ForecastService,
     private readonly loadModelService: LoadModelService,
   ) {}
-
-  @Get('/test')
-  @Header('Cache-Control', 'no-store')
-  async getTestItems() {
-    return await main();
-  }
 
   @Get('/data')
   @Header('Cache-Control', 'no-store')
