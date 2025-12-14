@@ -1,8 +1,8 @@
 {
-  "name": "project-name",
+  "name": "streamway-gw",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Streamway Gateway-Service",
+  "author": "Selivantsev Oleg",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
