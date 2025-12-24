@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class TemperatureSeed1234567890124 implements MigrationInterface {
+export class TemperatureSeed1234567890131 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const months = [
       // 2022: months 1-12
@@ -20,10 +20,11 @@ export class TemperatureSeed1234567890124 implements MigrationInterface {
       25.4, 25.8, 23.5, 20.9, 17.6, 14.9, 14.5, 16.0, 18.6, 21.1, 22.8, 24.3,
     ];
 
+    // TODO: [month, temp, modelId, cityId]
     for (let i = 0; i < months.length; i++) {
       await queryRunner.query(
-        `INSERT INTO average_temperature (month, temp, predict) VALUES ($1, $2, $3)`,
-        [months[i], temps[i], null],
+        `INSERT INTO average_temperature (month, temp, predict, "cityId") VALUES ($1, $2, $3, $4)`,
+        [months[i], temps[i], null, 1],
       );
     }
 
