@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { CityEntity } from '@app/forecast/entities/city.entity';
 
 @Entity({ name: 'average_temperature' })
 export class AverageTemperatureEntity {
@@ -9,8 +10,14 @@ export class AverageTemperatureEntity {
   temp: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  train: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
   predict: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 7 })
   month: number;
+
+  @ManyToOne(() => CityEntity, (city) => city.temperatures, { eager: true })
+  city: CityEntity;
 }
